@@ -6,6 +6,7 @@
 #load packages
 library(rgdal)
 library(RgoogleMaps)
+library(ggmap)
 
 # dns and layer for the state boundary shape file
 dir.state <- "//deqhq1/GISLIBRARY/Base_Data/Admin_Boundaries/OR_StateBnd_USGS"
@@ -27,6 +28,10 @@ sp.state.bnd.g <- spTransform(sp.state.bnd, google.proj4string)
 # (units are decimal degrees)
 sp.state.bnd.g@bbox[1:2,]
 
+# calculate matrix for bounding box
+mt.bbox <- c(range(sp.state.bnd.g@bbox[,1]),
+             range(sp.state.bnd.g@bbox[,2]))
+
 # calculate the lon and lat of the center for the Google Maps tile from the
 # bounding box of the state boundary
 center <- c(mean(sp.state.bnd.g@bbox[2,]), mean(sp.state.bnd.g@bbox[1,]))
@@ -39,4 +44,17 @@ zoom <- min(MaxZoom(range(sp.state.bnd.g@bbox[2,]),
 # get the Google Maps tile to use as background and save to file
 gm.state.bnd <- GetMap(center=center, zoom=zoom,
                        destfile = "gm-state-bnd.png")
+
+str(sp.state.bnd.g)
+
+plot(gm.state.bnd)
+
+plot(sp.state.bnd.g, add=TRUE)
+
+par(new=TRUE)
+
+gm.state.bnd <- get_map(location = mt.bbox, zoom=zoom, maptype="roadmap")
+
+
+ggmap(gm.state.bnd, extent="device") + geom_polygon()
 
